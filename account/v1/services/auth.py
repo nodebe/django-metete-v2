@@ -117,7 +117,7 @@ class AuthService(CustomApiRequestProcessorBase):
         login_count = 1 if login_count is None else login_count + 1
         cache.set(login_count_cache_key, login_count, timeout=1200)
 
-        if login_count and login_count >= 5:
+        if login_count and login_count >= settings.MAX_LOGIN_ATTEMPTS:
             return self.make_403(ErrorMessages.too_many_attempts_account_blocked)
 
         return None

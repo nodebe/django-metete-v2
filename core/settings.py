@@ -316,3 +316,4 @@ CHANNEL_LAYERS = {
 DATA_BUCKET = os.getenv("DATA_BUCKET")
 
 MAX_PAGE_SIZE = int(os.getenv("MAX_PAGE_SIZE", 10))
+MAX_LOGIN_ATTEMPTS = int(os.getenv("MAX_LOGIN_ATTEMPTS", 5))

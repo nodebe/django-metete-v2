@@ -139,8 +139,8 @@ class CustomApiRequestUtil(DefaultPagination):
 
         return user
 
-    def split_ids(self, filter_params, key):
-        val = filter_params.get(key)
+    def split_ids(self, key):
+        val = self.get_request_filter_params().get(key)
         return val.split(",") if val else None
 
     def report_activity(self, user=None, activity_type=None, data=None, description=None):
