@@ -1,5 +1,11 @@
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.utils.text import slugify
+from rest_framework import status
+
+from utils.constants import ErrorMessages
+from utils.errors import OperationError, ServerError
 
 
 class CacheUtil:
@@ -40,3 +46,57 @@ class CacheUtil:
             list_args.insert(0, name)
 
         return ":".join(list(slugify(arg) for arg in list_args))
+
+    def fetch_object(self, model, *cache_key_parts, filters=None, exclude=None, order_by=None, many=False, timeout=None,
+                     not_found_error=None, use_model_key=False, require_fresh_data=False):
+        """
+        Generic cached fetch covering the "query -> cache -> standard error handling"
+        pattern repeated across services (single object, list, and filtered list).
+
+        - filters/exclude accept either a dict of ORM kwargs or a Q object.
+        - many=False (default) returns a single object via .get(), translating Model.DoesNotExist into a 404
+        OperationError (message=not_found_error).
+        - many=True returns a queryset, optionally ordered via order_by (str or list).
+
+        :return: tuple[Any | None, Any | None]
+        """
+
+        def __do_fetch():
+            try:
+                queryset = model.objects.all()
+
+                if filters is not None:
+                    queryset = queryset.filter(filters) if isinstance(filters, Q) else queryset.filter(**filters)
+
+                if exclude is not None:
+                    queryset = queryset.exclude(exclude) if isinstance(exclude, Q) else queryset.exclude(**exclude)
+
+                if not many:
+                    return queryset.get(), None
+
+                if order_by:
+                    order_fields = order_by if isinstance(order_by, (list, tuple)) else [order_by]
+                    queryset = queryset.order_by(*order_fields)
+
+                return queryset, None
+
+            except ObjectDoesNotExist:
+                return None, OperationError(
+                    getattr(self, "request", None),
+                    message=not_found_error or ErrorMessages.resource_not_found,
+                    status_code=status.HTTP_404_NOT_FOUND,
+                )
+
+            except Exception as e:
+                server_error = ServerError(error=e, obj=self)
+                return None, OperationError(
+                    getattr(self, "request", None), message=server_error.message, status_code=server_error.status_code
+                )
+
+        if use_model_key:
+            cache_key = self.generate_cache_key(*cache_key_parts, model=model)
+        else:
+            cache_key = self.generate_cache_key(*cache_key_parts)
+
+        return self.get_cache_value_or_default(cache_key, __do_fetch, require_fresh_data=require_fresh_data,
+                                               timeout=timeout)
