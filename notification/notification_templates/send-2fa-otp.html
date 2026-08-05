@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset - {{ app_name }}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; color: #333333; background-color: #f5f5f5; line-height: 1.6;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 660px; margin: 0 auto; background-color: #ffffff;">
+        <!-- Header -->
+        <tr>
+            <td style="background-color: #ffffff; padding: 20px 30px; text-align: center;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td style="text-align: left; width: 50%;">
+                            <img alt="{{ app_name }} Logo" src="{{ app_logo_url }}" style="width: 100px;"/>
+                        </td>
+                        <td style="text-align: right; width: 50%;">
+                            <a style="margin: 0; color: #027dff; font-size: 16px; text-decoration: none;" href="{{ app_url }}">{{ app_short_url }}</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <!-- Content -->
+        <tr>
+            <td style="padding: 30px;">
+                <h1 style="margin-top: 0; color: #027dff; font-size: 24px;">Two-Factor Authentication</h1>
+
+                <p style="margin-bottom: 20px;">Hello {{ first_name }},</p>
+
+                <p style="margin-bottom: 20px;">Use the One-Time Password below to login to your account. It will expire in the next 5 minutes</p>
+
+                <p style="margin-bottom: 20px;">{{ otp }}</p>
+
+                <p style="margin-bottom: 20px;">If you have any questions or need assistance, please contact our support team.</p>
+
+                <p style="margin-bottom: 5px;">Best regards,</p>
+                <p style="margin-top: 0;">The {{ app_name }} Team</p>
+            </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+            <td style="background-color: #f2f2f2; text-align: center">
+              <p style="margin-top: 20px; font-size: 12px; color: #666666">
+                You are receiving this email because you recently visited
+                  {{ app_short_url }}
+              </p>
+              <p style="margin: 5px 0; font-size: 12px; color: #666666">
+                  {{ app_address }}
+              </p>
+              <p style="margin: 5px 0; font-size: 12px; color: #666666">
+                © 2025 {{ app_name }}
+              </p>
+
+              <p style="margin-top: 15px; font-size: 12px; color: #666666">
+                <a href="#" style="color: #027dff; text-decoration: underline"
+                  >Unsubscribe</a
+                >
+                |
+                <a href="#" style="color: #027dff; text-decoration: underline"
+                  >Update Preferences</a
+                >
+              </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

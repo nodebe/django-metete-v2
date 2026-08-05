@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Profile Picture",
+    "label": "profile_picture",
+    "description": "User profile images",
+    "allowed_file_types": [".jpg", ".jpeg", ".png"],
+    "max_file_size_in_kb": 2048,
+    "upload_to": "images"
+  }
+]
