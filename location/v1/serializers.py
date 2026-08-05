@@ -28,8 +28,8 @@ class StateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = State
-        fields = ['id', 'name', 'code']
-        read_only_fields = ["name", "code"]
+        fields = ['id', 'name', 'code', "country"]
+        read_only_fields = ["name", "code", "country"]
 
 
 class CitySerializer(serializers.ModelSerializer):

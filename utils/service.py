@@ -488,7 +488,7 @@ def get_unique_id(prefix="", suffix="", length=None, is_secret_key=False):
     generated_id = f"{prefix}{date_str}{random_part}{suffix}"
 
     if length:
-        return generated_id[:length], None
+        return generated_id[:length]
 
     return generated_id
 
