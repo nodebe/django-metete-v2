@@ -83,6 +83,7 @@ For local development, the quickest path is `USE_TEST_DB="True"` (SQLite) and `U
 ### 4. Run database migrations
 
 ```bash
+python manage.py makemigrations account base location media notification roles_permissions
 python manage.py migrate
 ```
 
