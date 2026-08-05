@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-
-from account.v1.models.user import User, AuthProviders
+from django.contrib.auth import get_user_model
 from utils.service import CustomApiRequestProcessorBase
+
+User = get_user_model()
 
 
 class SocialAuthService(CustomApiRequestProcessorBase, ABC):
