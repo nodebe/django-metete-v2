@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
 from django.db.models import TextChoices
