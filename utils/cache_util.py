@@ -3,7 +3,7 @@ from django.utils.text import slugify
 
 
 class CacheUtil:
-    def get_cache_value_or_default(self, cache_key, value_callback=None, require_fresh_data=False, timeout=None):
+    def get_or_set(self, cache_key, value_callback=None, require_fresh_data=False, timeout=None):
         cached_data = None
         error_details = None
 
