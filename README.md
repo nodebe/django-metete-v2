@@ -41,8 +41,9 @@ Each domain app follows a `v1/` sub-structure with `views/`, `serializers/`, `se
 ### 1. Clone and create a virtual environment
 
 ```bash
-git clone <repo-url>
-cd django-metete
+mkdir <project-name>
+cd <project-name>
+git clone https://github.com/nodebe/django-metete-v2.git .
 python3 -m venv .venv
 source .venv/bin/activate
 ```
