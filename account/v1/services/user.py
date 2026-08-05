@@ -3,6 +3,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from account.models.user import User
+from base.models import QuerySetManagerTypes
 from location.v1.models import Location
 from location.v1.serializers import LocationSerializer
 from roles_permissions.services import RoleService
@@ -89,25 +90,11 @@ class AccountService(CustomApiRequestProcessorBase):
         return user_update, None
 
     def fetch_user_by_user_id(self, user_id, is_background=False):
-        def __do_fetch_single():
-            try:
-                user = User.objects.get(user_id=user_id)
-                return user, None
+        error_message = ErrorMessages.user_with_id_not_found.format(user_id)
+        filters = {"user_id": user_id}
 
-            except User.DoesNotExist:
-                if is_background:
-                    return None, None
-
-                return None, self.make_404(ErrorMessages.user_with_id_not_found.format(user_id))
-
-            except Exception as e:
-                return None, self.make_500(e, self)
-
-        if is_background:
-            return __do_fetch_single()
-
-        cache_key = self.generate_cache_key(user_id, model=User)
-        return self.get_cache_value_or_default(cache_key, __do_fetch_single)
+        return self.fetch_object(model=User, queryset_type=QuerySetManagerTypes.objects, filters=filters,
+                                 not_found_error=error_message, is_background=is_background, id=user_id)
 
     def fetch_user_by_phone_number(self, phone_number, is_fresh=False):
         """
@@ -258,13 +245,13 @@ class UserService(CustomApiRequestProcessorBase):
             if hasattr(profile_photo, "owner") and profile_photo.owner != user:
                 return None, self.make_400(ErrorMessages.unknown_media_user)
 
-        roles = payload.pop("roles", None) or user.roles
+        roles = payload.pop("roles", None) or user.roles.all()
 
         permissions = payload.pop("permissions", None) or user.permissions.all()
 
         model_service = ModelService(self.request)
 
-        user, error = model_service.update_model_instance(user, **payload)
+        user, error = model_service.update_model_instance(user, cache_keys="user_id", **payload)
         if error:
             return None, error
 
@@ -276,7 +263,7 @@ class UserService(CustomApiRequestProcessorBase):
 
     def fetch_list(self, filter_params, **kwargs):
         keyword = filter_params.get("keyword")
-        roles = filter_params.get("roles")
+        roles = self.split_ids("roles")
 
         q = Q()
 
@@ -286,8 +273,11 @@ class UserService(CustomApiRequestProcessorBase):
                   Q(user_id__icontains=keyword))
 
         if roles:
-            roles = roles.split(",")
             q &= Q(role__id__in=roles)
+
+        return self.fetch_object(
+            model=User
+        )
 
         queryset = (User.available_objects.filter(q)
                     .exclude(user_id=self.auth_user.user_id)

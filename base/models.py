@@ -14,6 +14,14 @@ MailSenderOptionsFromEmail = {
 }
 
 
+class QuerySetManagerTypes(models.TextChoices):
+    objects = "objects"
+    deleted_objects = "deleted_objects"
+    active_available_objects = "active_available_objects"
+    available_objects = "available_objects"
+    active_objects = "active_objects"
+
+
 class AvailableManager(models.Manager):
     """Fetches all available records"""
 
