@@ -46,6 +46,7 @@ cd <project-name>
 git clone https://github.com/nodebe/django-metete-v2.git .
 python3 -m venv .venv
 source .venv/bin/activate
+git remote set-url origin <project-github-repo-url>
 ```
 
 ### 2. Install dependencies
@@ -202,3 +203,8 @@ python manage.py shell
 - `AUTH_USER_MODEL` is `account.User` — a custom user model.
 - Set `APP_ENC_ENABLED=True` and configure `APP_ENC_KEY`/`APP_ENC_VEC` if you need response payload encryption (see `CustomResponseRenderer`).
 - The Django admin is exposed at `/sys-admin-path/`, not the default `/admin/`.
+
+## Documentation Template
+Use the link below to access the documentation template and create a new collection for your project:
+
+[Documentation URL](https://documenter.getpostman.com/view/53417790/2sBY4VJcFH)
