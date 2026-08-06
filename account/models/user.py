@@ -26,7 +26,7 @@ class Otp(OtpBase):
     user = models.OneToOneField("account.User", on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
-        return self.user.notification
+        return self.user.email
 
 
 class User(AbstractUser, BaseModel):
