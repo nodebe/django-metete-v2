@@ -275,6 +275,7 @@ class UserService(CustomApiRequestProcessorBase):
         if roles:
             q &= Q(role__id__in=roles)
 
+        # TODO: Complete this setup
         return self.fetch_object(
             model=User
         )
