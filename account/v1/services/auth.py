@@ -51,7 +51,7 @@ class AuthService(CustomApiRequestProcessorBase):
             user_exists, user = account_service.check_email_exists(email)
         else:
             user_exists, user = True, user
-            email = user.notification
+            email = user.email
 
         if user_exists:
             otp_service = OTPService(self.request)
