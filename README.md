@@ -47,7 +47,6 @@ git clone https://github.com/nodebe/django-metete-v2.git .
 python3 -m venv .venv
 source .venv/bin/activate
 git remote set-url origin <project-github-repo-url>
-git remote add metete https://github.com/nodebe/django-metete-v2.git
 ```
 
 ### 2. Install dependencies
