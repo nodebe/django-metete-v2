@@ -106,6 +106,27 @@ class CustomApiResponseUtil:
 
         return self.response_with_json(response_data, status_code=status_code)
 
+    def __handle_non_field_errors(self, errors):
+        """
+        non_field_errors is in CustomResponseRenderer.SKIP_FIELDS, so left as-is it's the only
+        key and _extract_error_details finds nothing to extract, falling back to a raw str(dict)
+        message. Re-key each entry under its `code` (e.g. "password") instead, matching the
+        {field: [messages]} shape the 'error' branch above produces, so the renderer surfaces it
+        as a normal field error.
+        """
+        non_field_errors = errors.pop("non_field_errors", None)
+        if not non_field_errors:
+            return errors
+
+        if not isinstance(non_field_errors, list):
+            non_field_errors = [non_field_errors]
+
+        for error_detail in non_field_errors:
+            field = getattr(error_detail, "code", None) or "non_field_errors"
+            errors.setdefault(field, []).append(str(error_detail))
+
+        return errors
+
     def validation_error(self, errors, status_code=None):
         if status_code is None:
             status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -115,6 +136,10 @@ class CustomApiResponseUtil:
             errors.pop("status_code", None)
             for key, value in nested_errors.items():
                 errors.update({key: [value]})
+
+        if isinstance(errors, dict) and "non_field_errors" in errors:
+            errors = self.__handle_non_field_errors(errors)
+
         return self.response_with_json({
             "error": errors
         }, status_code=status_code)
@@ -503,7 +528,10 @@ def generate_password():
 
 
 def generate_otp():
-    otp = str(random.randint(1, 999999)).zfill(6)
+    if settings.DEBUG:
+        otp = settings.DEFAULT_OTP
+    else:
+        otp = str(random.randint(1, 999999)).zfill(6)
 
     hashed_otp = make_password(otp)
 
