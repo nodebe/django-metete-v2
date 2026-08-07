@@ -2,6 +2,7 @@ from django.contrib.auth.hashers import make_password
 from password_validator import PasswordValidator
 from rest_framework import serializers
 from utils.constants import ErrorMessages
+from utils.errors import ValidationError
 
 
 class ResetPasswordSerializer(serializers.Serializer):
@@ -17,7 +18,7 @@ class ResetPasswordSerializer(serializers.Serializer):
         password_schema.min(12).uppercase().lowercase().digits().symbols()
 
         if not password_schema.validate(password):
-            raise serializers.ValidationError(ErrorMessages.insecure_password, code="password")
+            return ValidationError(ErrorMessages.insecure_password, code="password")
 
         data["password"] = make_password(password)
 

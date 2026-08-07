@@ -87,7 +87,7 @@ class PasswordResetSerializer(serializers.Serializer):
         password = attrs.get("new_password", "")
 
         password_schema = PasswordValidator()
-        password_schema.min(8).uppercase().lowercase().digits().symbols()
+        password_schema.min(12).uppercase().lowercase().digits().symbols()
 
         if not password_schema.validate(password):
             return ValidationError(ErrorMessages.insecure_password, "password")
