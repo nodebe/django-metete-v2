@@ -198,7 +198,7 @@ class RoleService(CustomApiRequestProcessorBase):
             else:
                 permissions = Permission.objects.order_by("name").filter(
                     role__id__in=user.roles.values_list("pk", flat=True)
-                ).distinct("name").values_list("name", flat=True)
+                ).values_list("name", flat=True).distinct()
             return list(permissions), None
 
         cache_key = self.generate_cache_key("permission_names", user.user_id)
