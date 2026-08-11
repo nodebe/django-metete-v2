@@ -43,6 +43,8 @@ class User(AbstractUser, BaseModel):
     is_verified = models.BooleanField(default=False)
     address = models.OneToOneField(to="location.Location", null=True, on_delete=models.SET_NULL, blank=True)
     user_type = models.CharField(max_length=20, choices=UserTypeOptions.choices, default=UserTypeOptions.client)
+    auth_provider = models.CharField(max_length=20, null=True, blank=True)
+
     is_2fa_set = models.BooleanField(default=False)
 
     def __str__(self):
