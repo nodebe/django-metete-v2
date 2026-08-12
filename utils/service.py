@@ -291,7 +291,10 @@ class CustomApiRequestUtil(DefaultPagination):
         raise Exception("Not implemented")
 
     def fetch_paginated_list(self, **extra_args):
-        queryset = self.fetch_list(**extra_args)
+        queryset, error = self.fetch_list(**extra_args)
+        if error:
+            return None, error
+
         page = self.paginate_queryset(queryset, request=self.request)
         data = self.serializer_class(page, many=True, context={"request": self.request}).data
 
