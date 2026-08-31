@@ -1,5 +1,6 @@
 import logging
 import random
+import re
 import secrets
 import string
 import phonenumbers
@@ -595,3 +596,47 @@ def format_otp(otp):
         raise ValueError("OTP must be a 6-digit number")
 
     return f"{otp[:3]}-{otp[3:]}"
+
+
+def invalid_input_checker(payload):
+    """
+    Used in serializers.
+    
+    Checks a dictionary payload for invalid/gibberish values.
+    Returns (False, bad_key) if gibberish is found.
+    """
+    if not isinstance(payload, dict):
+        raise ValueError("Payload must be a dictionary")
+
+    def __is_gibberish(value):
+        # Convert to string to safely check numbers or other data types
+        text = str(value).strip()
+        
+        if not text:
+            return False # Empty strings can be handled by standard required-field validators
+
+        # Rule 1: High ratio of special characters (over 50%)
+        # \w matches alphanumeric, \s matches whitespace. We replace them with '' to leave only symbols.
+        symbols_only = re.sub(r'[\w\s]', '', text)
+        if len(symbols_only) / len(text) > 0.5:
+            return True
+
+        # Rule 2: Keyboard smash detection (long alphabetic strings with no vowels)
+        letters_only = re.sub(r'[^a-zA-Z]', '', text)
+        if len(letters_only) > 5 and not re.search(r'[aeiouyAEIOUY]', letters_only):
+            return True
+
+        # Rule 3: Repetitive characters (5 or more of the exact same character in a row)
+        if re.search(r'(.)\1{4,}', text):
+            return True
+
+        return False
+
+    # Iterate through the payload
+    for key, value in payload.items():
+        if __is_gibberish(value):
+            # Return the first key that fails the check
+            return False, key
+            
+    # If it passes all checks, you can return a success state
+    return True, None
