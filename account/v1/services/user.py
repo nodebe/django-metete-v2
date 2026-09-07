@@ -127,7 +127,7 @@ class AccountService(CustomApiRequestProcessorBase):
     def fetch_user_data(self):
         user_data = self.get_user_data(self.auth_user)
 
-        poppable_data = ["refresh_token", "access_token", "token_type"]
+        poppable_data = ["refresh_token", "access_token", "token_type", "expiry", "redirect_to_2fa"]
         for key in poppable_data:
             user_data.pop(key, None)
 
