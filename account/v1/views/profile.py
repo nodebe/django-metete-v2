@@ -36,4 +36,5 @@ class PasswordResetAPIView(CreateAPIView, CustomApiRequestProcessorBase):
 
     def post(self, request, *args, **kwargs):
         service = AccountService(request)
+        self.response_message_on_success = ResponseMessages.successful_password_change
         return self.process_request(request, service.reset_password)

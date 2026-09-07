@@ -1,4 +1,4 @@
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -167,13 +167,16 @@ class AccountService(CustomApiRequestProcessorBase):
 
         if not check_password(old_password, user.password):
             return None, self.make_400(ErrorMessages.incorrect_password)
+        
+        if check_password(new_password, user.password):
+            return None, self.make_400(ErrorMessages.cannot_set_same_password)
 
-        user.password = new_password
+        user.password = make_password(new_password)
         user.save(update_fields=["password"])
 
         self.report_activity(user=user, description="Password reset successful")
 
-        return ResponseMessages.successful_password_change, None
+        return {"email": user.email}, None
 
 
 class UserService(CustomApiRequestProcessorBase):
