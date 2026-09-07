@@ -8,11 +8,11 @@ from roles_permissions.constants import RoleEnum
 from roles_permissions.services import RoleService
 from utils.constants import ResponseMessages, ErrorMessages
 from utils.models import ModelService
-from .user import AccountService
 from utils.service import CustomApiRequestProcessorBase, generate_otp, check_time_expired, get_unique_id
 from django.utils import timezone
 from ...models.user import Otp, User
 from django.db import transaction
+from .user import AccountService
 
 class OTPIntent(TextChoices):
     reset_password = "Reset Password"
@@ -61,9 +61,7 @@ class AuthService(CustomApiRequestProcessorBase):
         email = payload.get("email")
         password = payload.get("password")
 
-        account_service = AccountService(self.request)
-
-        user_exists, user = account_service.check_email_exists(email)
+        user_exists, user = self.account_service.check_email_exists(email)
 
         if not user_exists:
             return None, self.make_400(ErrorMessages.user_not_recognized)
@@ -85,8 +83,7 @@ class AuthService(CustomApiRequestProcessorBase):
     def send_otp(self, payload, otp_intent=None, user=None):
         if user is None:
             email = payload.get("email")
-            account_service = AccountService(self.request)
-            user_exists, user = account_service.check_email_exists(email)
+            user_exists, user = self.account_service.check_email_exists(email)
         else:
             user_exists, user = True, user
             email = user.email
@@ -119,8 +116,7 @@ class AuthService(CustomApiRequestProcessorBase):
         otp = payload.get("otp")
         email = payload.get("email")
 
-        account_service = AccountService(self.request)
-        user_exists, user = account_service.check_email_exists(email)
+        user_exists, user = self.account_service.check_email_exists(email)
 
         if not (user_exists and hasattr(user, "otp")):
             return None, self.make_400(ErrorMessages.user_not_recognized)
@@ -141,11 +137,11 @@ class AuthService(CustomApiRequestProcessorBase):
 
         elif otp_intent == OTPIntent.two_fa_verification:
             self.report_activity(user=user, description="2FA Log in to account")
-            return account_service.get_user_data(user), None
+            return self.account_service.get_user_data(user), None
         
         elif otp_intent == OTPIntent.signup_otp:
             self.report_activity(user=user, description="Verified Email OTP")
-            return account_service.get_user_data(user), None
+            return self.account_service.get_user_data(user), None
 
         return None, self.make_400(ErrorMessages.invalid_or_expired_otp)
 
@@ -170,8 +166,7 @@ class AuthService(CustomApiRequestProcessorBase):
         email = payload.get("email").lower()
         password = payload.get("password")
 
-        account_service = AccountService(self.request)
-        user_exists, user = account_service.check_email_exists(email)
+        user_exists, user = self.account_service.check_email_exists(email)
 
         if user and not user.is_active:
             return None, self.make_403(ErrorMessages.inactive_account)
@@ -190,9 +185,8 @@ class AuthService(CustomApiRequestProcessorBase):
         user.save(update_fields=["last_login"])
 
         if not user.is_2fa_set:
-            account_service = AccountService(request=self.request)
 
-            return account_service.get_user_data(user), None
+            return self.account_service.get_user_data(user), None
 
         return self.send_otp(payload={}, otp_intent=OTPIntent.two_fa_verification, user=user)
 

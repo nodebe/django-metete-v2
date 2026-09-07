@@ -6,6 +6,7 @@ from account.models.user import User
 from base.models import QuerySetManagerTypes
 from location.v1.models import Location
 from location.v1.serializers import LocationSerializer
+from notification.tasks import enable_2fa
 from roles_permissions.services import RoleService
 from utils.constants import ResponseMessages, ErrorMessages
 from utils.models import ModelService
@@ -14,8 +15,36 @@ from utils.service import CustomApiRequestProcessorBase, get_unique_id
 
 class AccountService(CustomApiRequestProcessorBase):
     def __init__(self, request):
+        from account.v1.services.auth import OTPService
+
         super().__init__(request)
         self.model_service = ModelService(self.request)
+        self.otp_service = OTPService(self.request)
+
+    def update_2fa(self, payload):
+        user = self.auth_user
+
+        otp = self.otp_service.get_or_set_user_otp(user)
+
+        _ = enable_2fa.delay(phone_number_or_email=user.email, otp=otp, first_name=user.first_name)
+
+        return {"email": user.email}, None
+    
+    def activate_deactivate_2fa(self, payload):
+        user = self.auth_user
+        otp = payload.get("otp")
+
+        is_verified, error = self.otp_service.verify_otp(user, otp)
+        if error:
+            return None, error
+
+        if not is_verified:
+            return None, self.make_400(ErrorMessages.invalid_or_expired_otp)
+        
+        user.is_2fa_set = not user.is_2fa_set
+        user.save(update_fields=["is_2fa_set"])
+
+        return None, None
 
     def fetch(self):
         return self.auth_user, None

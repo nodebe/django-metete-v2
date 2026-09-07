@@ -8,6 +8,7 @@ class MessageTypes(TextChoices):
     dynamic_notification = "Dynamic Notification"
     send_2fa_otp = "Two-Factor Authentication"
     signup_otp = "Signup OTP"
+    enable_2fa = "Enable 2FA"
 
 
 class NotificationType(TextChoices):

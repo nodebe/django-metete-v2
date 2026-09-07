@@ -121,3 +121,8 @@ class SiteUserSerializer(serializers.ModelSerializer):
 class UserLocationSerializer(serializers.Serializer):
     longitude = serializers.FloatField()
     latitude = serializers.FloatField()
+
+
+class OTPSerializer(serializers.Serializer):
+    otp = serializers.CharField()
+    
