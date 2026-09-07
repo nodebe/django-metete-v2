@@ -13,6 +13,16 @@ from utils.service import AppLogger
 APP_NAME = settings.APP_INFO_DEFAULTS.get("app_name")
 
 notifications = {
+    MessageTypes.signup_otp: {
+        "file": "signup-otp.html",
+        "description": "Signup OTP",
+        "in_app_message": "",
+        "sms_message": "",
+        "email_subject": "Signup OTP",
+        "variables": [
+            {"name": "otp", "description": "One-Time Password"}
+        ]
+    },
     MessageTypes.password_reset: {
         "file": "reset-password.html",
         "description": "Password Reset OTP",

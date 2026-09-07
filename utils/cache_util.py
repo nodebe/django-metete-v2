@@ -115,5 +115,5 @@ class CacheUtil:
         else:
             cache_key = self.generate_cache_key(*cache_key_parts.values())
 
-        return self.get_cache_value_or_default(cache_key, __do_fetch, require_fresh_data=require_fresh_data,
+        return self.get_or_set(cache_key, __do_fetch, require_fresh_data=require_fresh_data,
                                                timeout=timeout)

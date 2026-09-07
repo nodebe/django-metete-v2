@@ -6,6 +6,21 @@ from .util import NotificationUtil
 from .models import MessageTypes, NotificationType
 
 
+@app.task
+def send_signup_otp(phone_number_or_email, otp, send_to=NotificationType.email):
+    util = NotificationUtil(notification_type=send_to)
+
+    otp = format_otp(otp)
+
+    return util.send_notification(
+        recipients=[phone_number_or_email],
+        message_type=MessageTypes.signup_otp,
+        data={
+            "otp": otp
+        }
+    )
+
+
 @app.task(queue=CeleryTaskQueue.notification)
 def send_password_reset(phone_number_or_email, otp, send_to=NotificationType.email):
     util = NotificationUtil(notification_type=send_to)

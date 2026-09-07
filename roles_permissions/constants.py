@@ -14,9 +14,16 @@ class PermissionEnum(TextChoices):
     update_users = "Update Users", "update_users"
     activate_or_deactivate_users = "Activate/Deactivate Users", "activate_deactivate_users"
 
+    # Create Surveys
+    create_surveys = "Create Surveys", "create_surveys"
+    update_surveys = "Update Surveys", "update_surveys"
+    delete_surveys = "Delete Surveys", "delete_surveys"
+    activate_or_deactivate_surveys = "Activate/Deactivate Surveys", "activate_or_deactivate_surveys"
+
 
 class RoleEnum(TextChoices):
     sysadmin = "System Administrator", "sys_admin"
+    client = "Client", "client"
 
 
 PermissionGroups = {
@@ -32,13 +39,21 @@ PermissionGroups = {
         PermissionEnum.update_users,
         PermissionEnum.activate_or_deactivate_users
     ],
+    "Survey Management": [
+        PermissionEnum.create_surveys,
+        PermissionEnum.update_surveys,
+        PermissionEnum.delete_surveys,
+        PermissionEnum.activate_or_deactivate_surveys
+    ]
 }
 
 DefaultRolesPermissions = {
     RoleEnum.sysadmin: [
         PermissionGroups.get("Role Management"),
         PermissionGroups.get("User Management"),
+        PermissionGroups.get("Survey Management"),
     ],
+    RoleEnum.client: []
 }
 
 # Hierarchy

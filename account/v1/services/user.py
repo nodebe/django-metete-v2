@@ -117,7 +117,7 @@ class AccountService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key(phone_number, model=User)
-        return self.get_cache_value_or_default(cache_key, __do_fetch_single)
+        return self.get_or_set(cache_key, __do_fetch_single)
 
     def check_username_exists(self, username):
         user = User.objects.filter(Q(username__iexact=username))

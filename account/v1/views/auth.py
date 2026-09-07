@@ -1,9 +1,38 @@
 from rest_framework.generics import CreateAPIView
 from utils.constants import ResponseMessages
-from ..serializers.auth import (LoginSerializer, ResetPasswordSerializer, VerifyUserOTPSerializer, EmailSerializer,
+from ..serializers.auth import (LoginSerializer, RegisterSerializer, ResetPasswordSerializer, VerifyUserOTPSerializer, EmailSerializer,
                                 RefreshTokenSerializer)
 from ..services.auth import AuthService, OTPIntent
 from utils.service import CustomApiRequestProcessorBase
+
+
+class RegisterAPIView(CreateAPIView, CustomApiRequestProcessorBase):
+    serializer_class = RegisterSerializer
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        service = AuthService(request)
+        self.response_message_on_success = ResponseMessages.otp_sent_to_email
+        return self.process_request(request, service.register)
+    
+
+class VerifySignupOTPAPIView(CreateAPIView, CustomApiRequestProcessorBase):
+    serializer_class = VerifyUserOTPSerializer
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        service = AuthService(request)
+        return self.process_request(request, service.verify_signup_otp)
+    
+
+class ResendSignupOTPAPIView(CreateAPIView, CustomApiRequestProcessorBase):
+    serializer_class = EmailSerializer
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        service = AuthService(request)
+        self.response_message_on_success = ResponseMessages.otp_sent_to_email
+        return self.process_request(request, service.send_otp, otp_intent=OTPIntent.signup_otp)
 
 
 class LoginAPIView(CreateAPIView, CustomApiRequestProcessorBase):
@@ -14,7 +43,7 @@ class LoginAPIView(CreateAPIView, CustomApiRequestProcessorBase):
         service = AuthService(request)
         self.response_message_on_success = ResponseMessages.login_successful
         return self.process_request(request, service.login)
-
+    
 
 class ForgotPasswordAPIView(CreateAPIView, CustomApiRequestProcessorBase):
     serializer_class = EmailSerializer
@@ -22,6 +51,7 @@ class ForgotPasswordAPIView(CreateAPIView, CustomApiRequestProcessorBase):
 
     def post(self, request, *args, **kwargs):
         service = AuthService(request)
+        self.response_message_on_success = ResponseMessages.otp_sent_to_email
         return self.process_request(request, service.send_otp, otp_intent=OTPIntent.reset_password)
 
 
@@ -31,6 +61,7 @@ class VerifyPasswordOTPAPIView(CreateAPIView, CustomApiRequestProcessorBase):
 
     def post(self, request, *args, **kwargs):
         service = AuthService(request)
+        self.response_message_on_success = ResponseMessages.valid_otp
         return self.process_request(request, service.verify_password_otp)
 
 
@@ -58,6 +89,7 @@ class PasswordResetOTPAPIView(CreateAPIView, CustomApiRequestProcessorBase):
 
     def post(self, request, *args, **kwargs):
         service = AuthService(request)
+        self.response_message_on_success = ResponseMessages.successful_password_change
         return self.process_request(request, service.reset_password)
 
 
@@ -68,4 +100,3 @@ class CustomTokenRefreshAPIView(CreateAPIView, CustomApiRequestProcessorBase):
     def post(self, request, *args, **kwargs):
         service = AuthService(request)
         return self.process_request(request, service.refresh_token)
-

@@ -87,7 +87,7 @@ class LocationService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key("countries")
-        return self.get_cache_value_or_default(cache_key, __do_fetch)
+        return self.get_or_set(cache_key, __do_fetch)
 
     def fetch_active_countries(self):
         def __do_fetch():
@@ -99,7 +99,7 @@ class LocationService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key("active_countries")
-        return self.get_cache_value_or_default(cache_key, __do_fetch)
+        return self.get_or_set(cache_key, __do_fetch)
 
     def fetch_states(self, country_id):
         def __do_fetch():
@@ -111,7 +111,7 @@ class LocationService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key("states", country_id)
-        return self.get_cache_value_or_default(cache_key, __do_fetch)
+        return self.get_or_set(cache_key, __do_fetch)
 
     def fetch_active_states(self, country_id):
         def __do_fetch():
@@ -123,7 +123,7 @@ class LocationService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key(country_id, "active_states", model=Country)
-        return self.get_cache_value_or_default(cache_key, __do_fetch)
+        return self.get_or_set(cache_key, __do_fetch)
 
     def fetch_cities(self, state_id):
         def __do_fetch():
@@ -135,7 +135,7 @@ class LocationService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key(state_id, "cities", model=State)
-        return self.get_cache_value_or_default(cache_key, __do_fetch)
+        return self.get_or_set(cache_key, __do_fetch)
 
     def fetch_active_cities(self, state_id):
         def __do_fetch():
@@ -147,7 +147,7 @@ class LocationService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key(state_id, "active_cities", model=State)
-        return self.get_cache_value_or_default(cache_key, __do_fetch)
+        return self.get_or_set(cache_key, __do_fetch)
 
     def fetch_country_by_id(self, country_id):
         def __do_fetch():
@@ -162,7 +162,7 @@ class LocationService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key("country", country_id)
-        return self.get_cache_value_or_default(cache_key, __do_fetch)
+        return self.get_or_set(cache_key, __do_fetch)
 
     def create_location(self, address):
         try:

@@ -66,7 +66,7 @@ class MediaService(CustomApiRequestProcessorBase):
                 )
 
         cache_key = self.generate_cache_key("media_type", media_type_id)
-        return self.get_cache_value_or_default(cache_key, __do_fetch_single)
+        return self.get_or_set(cache_key, __do_fetch_single)
 
     def find_uploaded_media_by_id(self, media_id, many=False):
         if not many and not str(media_id).isdigit():
@@ -89,7 +89,7 @@ class MediaService(CustomApiRequestProcessorBase):
                 )
 
         cache_key = self.generate_cache_key("uploaded_media", media_id)
-        return self.get_cache_value_or_default(cache_key, __do_fetch_single)
+        return self.get_or_set(cache_key, __do_fetch_single)
 
     def fetch_media_types(self):
         def __do_fetch():
@@ -103,5 +103,5 @@ class MediaService(CustomApiRequestProcessorBase):
                 )
 
         cache_key = self.generate_cache_key("media_types")
-        return self.get_cache_value_or_default(cache_key, __do_fetch)
+        return self.get_or_set(cache_key, __do_fetch)
     
