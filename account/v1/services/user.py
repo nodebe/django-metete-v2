@@ -1,4 +1,4 @@
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -6,6 +6,7 @@ from account.models.user import User
 from base.models import QuerySetManagerTypes
 from location.v1.models import Location
 from location.v1.serializers import LocationSerializer
+from notification.tasks import enable_2fa
 from roles_permissions.services import RoleService
 from utils.constants import ResponseMessages, ErrorMessages
 from utils.models import ModelService
@@ -14,8 +15,36 @@ from utils.service import CustomApiRequestProcessorBase, get_unique_id
 
 class AccountService(CustomApiRequestProcessorBase):
     def __init__(self, request):
+        from account.v1.services.auth import OTPService
+
         super().__init__(request)
         self.model_service = ModelService(self.request)
+        self.otp_service = OTPService(self.request)
+
+    def update_2fa(self, payload):
+        user = self.auth_user
+
+        otp = self.otp_service.get_or_set_user_otp(user)
+
+        _ = enable_2fa.delay(phone_number_or_email=user.email, otp=otp, first_name=user.first_name)
+
+        return {"email": user.email}, None
+    
+    def activate_deactivate_2fa(self, payload):
+        user = self.auth_user
+        otp = payload.get("otp")
+
+        is_verified, error = self.otp_service.verify_otp(user, otp)
+        if error:
+            return None, error
+
+        if not is_verified:
+            return None, self.make_400(ErrorMessages.invalid_or_expired_otp)
+        
+        user.is_2fa_set = not user.is_2fa_set
+        user.save(update_fields=["is_2fa_set"])
+
+        return None, None
 
     def fetch(self):
         return self.auth_user, None
@@ -117,7 +146,7 @@ class AccountService(CustomApiRequestProcessorBase):
                 return None, self.make_500(e, self)
 
         cache_key = self.generate_cache_key(phone_number, model=User)
-        return self.get_cache_value_or_default(cache_key, __do_fetch_single)
+        return self.get_or_set(cache_key, __do_fetch_single)
 
     def check_username_exists(self, username):
         user = User.objects.filter(Q(username__iexact=username))
@@ -127,7 +156,7 @@ class AccountService(CustomApiRequestProcessorBase):
     def fetch_user_data(self):
         user_data = self.get_user_data(self.auth_user)
 
-        poppable_data = ["refresh_token", "access_token", "token_type"]
+        poppable_data = ["refresh_token", "access_token", "token_type", "expiry", "redirect_to_2fa"]
         for key in poppable_data:
             user_data.pop(key, None)
 
@@ -167,13 +196,16 @@ class AccountService(CustomApiRequestProcessorBase):
 
         if not check_password(old_password, user.password):
             return None, self.make_400(ErrorMessages.incorrect_password)
+        
+        if check_password(new_password, user.password):
+            return None, self.make_400(ErrorMessages.cannot_set_same_password)
 
-        user.password = new_password
+        user.password = make_password(new_password)
         user.save(update_fields=["password"])
 
         self.report_activity(user=user, description="Password reset successful")
 
-        return ResponseMessages.successful_password_change, None
+        return {"email": user.email}, None
 
 
 class UserService(CustomApiRequestProcessorBase):

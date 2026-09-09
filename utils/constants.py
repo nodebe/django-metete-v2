@@ -53,6 +53,7 @@ class ErrorMessages(TextChoices):
     email_and_role_required = "Email and role required."
     not_a_number = "{name} is not a number."
     validation_error = "Validation error."
+    cannot_set_same_password = "New password cannot be same as current password"
 
 
 class ResponseMessages(TextChoices):

@@ -6,7 +6,22 @@ from .util import NotificationUtil
 from .models import MessageTypes, NotificationType
 
 
-@app.task(queue=CeleryTaskQueue.notification)
+@app.task
+def send_signup_otp(phone_number_or_email, otp, send_to=NotificationType.email):
+    util = NotificationUtil(notification_type=send_to)
+
+    otp = format_otp(otp)
+
+    return util.send_notification(
+        recipients=[phone_number_or_email],
+        message_type=MessageTypes.signup_otp,
+        data={
+            "otp": otp
+        }
+    )
+
+
+@app.task()
 def send_password_reset(phone_number_or_email, otp, send_to=NotificationType.email):
     util = NotificationUtil(notification_type=send_to)
 
@@ -21,7 +36,7 @@ def send_password_reset(phone_number_or_email, otp, send_to=NotificationType.ema
     )
 
 
-@app.task(queue=CeleryTaskQueue.notification)
+@app.task()
 def send_dynamic_notification(recipients, username, message, send_to=NotificationType.email):
     util = NotificationUtil(notification_type=send_to)
 
@@ -41,7 +56,7 @@ def send_dynamic_notification(recipients, username, message, send_to=Notificatio
 #     termii_api_service.send_sms_notification(recipients, message)
 
 
-@app.task(queue=CeleryTaskQueue.notification)
+@app.task()
 def send_2fa_otp(phone_number_or_email, otp, first_name, send_to=NotificationType.email):
     util = NotificationUtil(notification_type=send_to)
 
@@ -50,6 +65,21 @@ def send_2fa_otp(phone_number_or_email, otp, first_name, send_to=NotificationTyp
     return util.send_notification(
         recipients=[phone_number_or_email],
         message_type=MessageTypes.send_2fa_otp,
+        data={
+            "first_name": first_name,
+            "otp": otp
+        }
+    )
+
+@app.task()
+def enable_2fa(phone_number_or_email, otp, first_name, send_to=NotificationType.email):
+    util = NotificationUtil(notification_type=send_to)
+
+    otp = format_otp(otp)
+
+    return util.send_notification(
+        recipients=[phone_number_or_email],
+        message_type=MessageTypes.enable_2fa,
         data={
             "first_name": first_name,
             "otp": otp

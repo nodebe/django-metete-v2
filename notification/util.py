@@ -13,6 +13,16 @@ from utils.service import AppLogger
 APP_NAME = settings.APP_INFO_DEFAULTS.get("app_name")
 
 notifications = {
+    MessageTypes.signup_otp: {
+        "file": "signup-otp.html",
+        "description": "Signup OTP",
+        "in_app_message": "",
+        "sms_message": "",
+        "email_subject": "Signup OTP",
+        "variables": [
+            {"name": "otp", "description": "One-Time Password"}
+        ]
+    },
     MessageTypes.password_reset: {
         "file": "reset-password.html",
         "description": "Password Reset OTP",
@@ -35,9 +45,19 @@ notifications = {
             {"name": "message", "description": "Message to the user"}
         ]
     },
-
     MessageTypes.send_2fa_otp: {
         "file": "send-2fa-otp.html",
+        "description": "Two Factor Authentication OTP",
+        "in_app_message": "",
+        "sms_message": "",
+        "email_subject": "Two-Factor Authentication OTP",
+        "variables": [
+            {"name": "first_name", "description": "First Name"},
+            {"name": "otp", "description": "One-Time Password"}
+        ]
+    },
+    MessageTypes.enable_2fa: {
+        "file": "enable-2fa.html",
         "description": "Two Factor Authentication OTP",
         "in_app_message": "",
         "sms_message": "",

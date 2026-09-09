@@ -26,7 +26,7 @@ class Role(BaseModel):
     permissions = models.ManyToManyField(Permission, blank=True, db_table="role_permissions")
     user_can_be_created_by = models.JSONField(null=True, blank=True)
     is_default = models.BooleanField(default=True)
-    is_private = models.BooleanField(default=False)
+    is_private = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         # If label is not manually set, generate it from name

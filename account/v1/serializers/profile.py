@@ -1,12 +1,11 @@
-from django.contrib.auth.hashers import make_password
 from password_validator import PasswordValidator
 from rest_framework import serializers
 from account.models.user import User
 from location.v1.serializers import LocationSerializer
 from roles_permissions.serializers import SimpleRoleSerializer
 from media.models import UploadedMedia
-from utils.constants import ResponseMessages, ErrorMessages
-from utils.errors import UserError, ValidationError
+from utils.constants import ErrorMessages
+from utils.errors import ValidationError
 from utils.service import format_phone_number
 import datetime
 
@@ -92,7 +91,7 @@ class PasswordResetSerializer(serializers.Serializer):
         if not password_schema.validate(password):
             return ValidationError(ErrorMessages.insecure_password, "password")
 
-        data["new_password"] = make_password(password)
+        data["new_password"] = password
 
         return data
 
@@ -122,3 +121,8 @@ class SiteUserSerializer(serializers.ModelSerializer):
 class UserLocationSerializer(serializers.Serializer):
     longitude = serializers.FloatField()
     latitude = serializers.FloatField()
+
+
+class OTPSerializer(serializers.Serializer):
+    otp = serializers.CharField()
+    

@@ -143,7 +143,7 @@ class RoleService(CustomApiRequestProcessorBase):
             return role, None
 
         cache_key = self.generate_cache_key(role_label, model=Role)
-        return self.get_cache_value_or_default(cache_key, fetch)
+        return self.get_or_set(cache_key, fetch)
 
     @classmethod
     def fetch_by_ids(cls, role_ids):
@@ -189,7 +189,7 @@ class RoleService(CustomApiRequestProcessorBase):
             return roles, None
 
         cache_key = self.generate_cache_key("role_names", user.user_id)
-        return self.get_cache_value_or_default(cache_key, __do_get_role_names)
+        return self.get_or_set(cache_key, __do_get_role_names)
 
     def get_user_permission_names(self, user):
         def __do_get_permission_names():
@@ -202,7 +202,7 @@ class RoleService(CustomApiRequestProcessorBase):
             return list(permissions), None
 
         cache_key = self.generate_cache_key("permission_names", user.user_id)
-        return self.get_cache_value_or_default(cache_key, __do_get_permission_names)
+        return self.get_or_set(cache_key, __do_get_permission_names)
 
     def get_user_role_ids(self, user):
         def __do_get_role_ids():
@@ -210,7 +210,7 @@ class RoleService(CustomApiRequestProcessorBase):
             return roles, None
 
         cache_key = self.generate_cache_key("role_ids", user.user_id)
-        return self.get_cache_value_or_default(cache_key, __do_get_role_ids)
+        return self.get_or_set(cache_key, __do_get_role_ids)
 
     def check_permission_to_act_based_on_role_hierarchy(self, roles):
         roles_hierarchy_list = self.merge_user_roles_below_hierarchy()
