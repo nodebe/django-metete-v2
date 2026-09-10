@@ -1,8 +1,10 @@
+import itertools
 import logging
 import random
 import re
 import secrets
 import string
+import threading
 import phonenumbers
 from math import ceil
 from django.shortcuts import render
@@ -495,17 +497,36 @@ class CustomApiRequestProcessorBase(CustomApiPermissionRequired, CustomApiReques
         return self.response_with_json(response_data, self.status_code_on_success)
 
 
+# USED for the unique id
+_id_lock = threading.Lock()
+_id_counter = itertools.count()
+
+
 def get_unique_id(prefix="", suffix="", length=None, is_secret_key=False):
+    def __to_base36(num):
+        digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+        if num == 0:
+            return "0"
+        result = ""
+        while num:
+            num, rem = divmod(num, 36)
+            result = digits[rem] + result
+        return result
+
     date_str = timezone.now().strftime("%Y%m%d%H%M%S")[3:]
 
-    fixed_parts_len = len(prefix) + len(suffix)
+    # Thread/process-safe monotonic counter, base-36 to keep it short.
+    with _id_lock:
+        counter_val = next(_id_counter) % 46656  # 36^3, wraps every 46,656 calls
+    counter_str = __to_base36(counter_val).zfill(3)
+
+    fixed_parts_len = len(prefix) + len(suffix) + len(counter_str)
 
     if length:
         target_len = max(length, fixed_parts_len + 6)
         random_len = target_len - fixed_parts_len - len(date_str)
 
         if random_len < 4:
-            date_str = date_str
             random_len = target_len - fixed_parts_len - len(date_str)
     else:
         random_len = 6
@@ -514,7 +535,7 @@ def get_unique_id(prefix="", suffix="", length=None, is_secret_key=False):
 
     random_part = get_random_string(max(0, random_len), allowed_chars=allowed_chars)
 
-    generated_id = f"{prefix}{date_str}{random_part}{suffix}"
+    generated_id = f"{prefix}{date_str}{counter_str}{random_part}{suffix}"
 
     if length:
         return generated_id[:length]
