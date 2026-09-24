@@ -484,7 +484,10 @@ class CustomApiRequestProcessorBase(CustomApiPermissionRequired, CustomApiReques
         if self.response_serializer is not None and response_data:
             response_data = self.response_serializer(response_data, many=self.response_serializer_requires_many).data
 
-        if self.wrap_response_in_data_object:
+        if isinstance(response_data, str):
+            self.response_message_on_success = response_data
+            response_data = {}
+        elif self.wrap_response_in_data_object:
             response_data = {"data": response_data}
 
         if self.ref_id:
